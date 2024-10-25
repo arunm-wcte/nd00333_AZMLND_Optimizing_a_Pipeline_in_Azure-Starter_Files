@@ -14,6 +14,7 @@ This model is then compared to an Azure AutoML run.
 
 ## Summary
 **In 1-2 sentences, explain the problem statement: e.g "This dataset contains data about... we seek to predict..."**
+
 This dataset contains data about a marketing campaign conducted by a Portuguese banking institution. The campaign primarily used phone calls to contact potential customers and promote a bank term deposit (a savings product).
 
 We seek to predict whether a customer will subscribe to the term deposit based on various features. This is a binary classification problem, where the target variable indicates whether a customer subscribed (yes) or did not subscribe (no). 
