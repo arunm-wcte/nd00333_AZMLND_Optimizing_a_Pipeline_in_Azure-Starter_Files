@@ -17,10 +17,10 @@ def clean_data(data):
 
     # Clean and one hot encode data
     x_df = data.to_pandas_dataframe().dropna()
-    jobs = pd.get_dummies(x_df.job, prefix="job")
+    jobs = pd.get_dummies(x_df.job, prefix="job") # performs a on-hot encoding for each of the categorical variables
     x_df.drop("job", inplace=True, axis=1)
     x_df = x_df.join(jobs)
-    x_df["marital"] = x_df.marital.apply(lambda s: 1 if s == "married" else 0)
+    x_df["marital"] = x_df.marital.apply(lambda s: 1 if s == "married" else 0) # converts the respective column to binary numerical value
     x_df["default"] = x_df.default.apply(lambda s: 1 if s == "yes" else 0)
     x_df["housing"] = x_df.housing.apply(lambda s: 1 if s == "yes" else 0)
     x_df["loan"] = x_df.loan.apply(lambda s: 1 if s == "yes" else 0)
@@ -38,7 +38,7 @@ def clean_data(data):
     return x_df, y_df
 
 def main():
-    # Add arguments to script
+    # Add arguments to the script
     parser = argparse.ArgumentParser()
 
     parser.add_argument('--C', type=float, default=1.0, help="Inverse of regularization strength. Smaller values cause stronger regularization")
@@ -46,27 +46,32 @@ def main():
 
     args = parser.parse_args()
 
+    # Start an Azure ML run
     run = Run.get_context()
 
+    # Log the arguments
     run.log("Regularization Strength:", np.float(args.C))
     run.log("Max iterations:", np.int(args.max_iter))
 
-    # TODO: Create TabularDataset using TabularDatasetFactory
-    # Data is located at:
-    # "https://automlsamplenotebookdata.blob.core.windows.net/automl-sample-notebook-data/bankmarketing_train.csv"
+    # Create TabularDataset using TabularDatasetFactory
+    data_url = "https://automlsamplenotebookdata.blob.core.windows.net/automl-sample-notebook-data/bankmarketing_train.csv"
+    ds = TabularDatasetFactory.from_delimited_files(path=data_url)
 
-    ds = ### YOUR CODE HERE ###
-    
+    # Clean and split data
     x, y = clean_data(ds)
 
-    # TODO: Split data into train and test sets.
+    # Split data into training and testing sets
+    x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=42)
 
-    ### YOUR CODE HERE ###a
-
+    # Train logistic regression model
     model = LogisticRegression(C=args.C, max_iter=args.max_iter).fit(x_train, y_train)
 
+    # Calculate and log the accuracy
     accuracy = model.score(x_test, y_test)
     run.log("Accuracy", np.float(accuracy))
+
+    os.makedirs('outputs', exist_ok = True)
+    joblib.dump(model, 'outputs/model.pkl')
 
 if __name__ == '__main__':
     main()
